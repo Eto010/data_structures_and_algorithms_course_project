@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <locale.h>
 
 #pragma pack(push, 1) // Убираем отсупы в памяти
 struct Book{ // Структура, в которую будет парситься запись из БД
@@ -69,16 +68,16 @@ struct List * appendList(struct List *head, char * aut, char * tit, char * pub, 
 
 struct List *openBase(char * namefile)
 {
-    FILE *file = fopen(namefile, "rb");
-    if (!file)
+    FILE *file = fopen(namefile, "rb");// Открываем БД бинарником, из-за этого в WSL была ошибка кодировки
+    if (!file)//
     {
         printf("Error in openBase in fopen\n");
         return NULL;
     }
-    fseek(file, 0, SEEK_END);
+    fseek(file, 0, SEEK_END);// Смотрим размер файла
     long file_size = ftell(file);
     rewind(file);
-    long count_books = file_size / sizeof(struct Book);
+    long count_books = file_size / sizeof(struct Book);// Считаем количество записей о книгах в БД
     if (count_books == 0)
     {
         printf("Error in openBase counter\n");
@@ -89,18 +88,18 @@ struct List *openBase(char * namefile)
     struct Book temp;
     for (int i = 0; i < count_books; i++)
     {
-        if (fread(&temp, sizeof(struct Book), 1, file) != 1) 
+        if (fread(&temp, sizeof(struct Book), 1, file) != 1) // Считываем запись о книге
         {
             printf("Read error in openBase#%d\n", i+1);
             break;
         }
-        head = appendList(head, temp.aut, temp.tit, temp.pub, temp.year, temp.cop);
+        head = appendList(head, temp.aut, temp.tit, temp.pub, temp.year, temp.cop);// Добавляем запись в список
     }
-    fclose(file);
+    fclose(file);//
     return head;
 }
 
-void freeList(struct List *head) {
+void freeList(struct List *head) {//
     while (head) {
         struct List *tmp = head;
         head = head->next;
@@ -108,10 +107,23 @@ void freeList(struct List *head) {
     }
 }
 
+void print20ElList(struct List *head)//
+{
+    if (head == NULL) return;
+    struct List * inhead = NULL;
+    for(int i = 0; i < 20; i++)
+    {
+       inhead = appendList(inhead, head->data.aut, head->data.tit, head->data.pub, head->data.year, head->data.cop);
+    }
+    printList(inhead);
+    freeList(inhead);
+    return;
+}
+
 int main()
 {
     struct List *base = openBase("testBase1.dat");
-    printList(base);
+    print20ElList(base);
     freeList(base);
     return 0;
 }
