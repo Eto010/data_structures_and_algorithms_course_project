@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #pragma pack(push, 1) // Убираем отсупы в памяти
 struct Book{ // Структура, в которую будет парситься запись из БД
@@ -99,7 +100,7 @@ struct List *openBase(char * namefile)
     return head;
 }
 
-void freeList(struct List *head) {//
+void freeList(struct List *head) {//Очищаем список
     while (head) {
         struct List *tmp = head;
         head = head->next;
@@ -107,7 +108,7 @@ void freeList(struct List *head) {//
     }
 }
 
-void print20ElList(struct List *head)//
+void print20ElList(struct List *head)//Выводим только 20 элементов
 {
     if (head == NULL) return;
     struct List * inhead = NULL;
@@ -119,6 +120,129 @@ void print20ElList(struct List *head)//
     freeList(inhead);
     return;
 }
+
+struct List retElAtInd(struct List* head, int n)//Функция для возвращения элемента списка по индексу
+{
+    for(int i = 0; i < n; i++)//Переходим к элементу с виртуальным номером n в списке
+    {
+        if (head->next == NULL)//Проверяем, не является ли следующий пустым
+        {
+            return *head;
+        }
+        else
+        {
+            head = head->next;//Переходим к следующему элементу списка, если он есть
+        }
+    }
+    return * head;
+}
+
+struct sortQueue{//Структура очередей для сортировки
+    int n;
+    struct sortQueue * next;
+};
+
+struct sortQueue * appendSQ(struct sortQueue * head, int n)//Добавляем элемент в сортировочную очередь
+{
+    struct sortQueue * temp = malloc(sizeof(struct sortQueue));//Выделяем дин. память
+    if(!temp)
+    {
+        perror("in appendSQ");
+        return head;
+    }
+    temp->n = n;// Приравниваем содержимое к полученному значению
+    if (head == NULL)
+    {
+        return temp; //Если очередь пустая - просто возвращаем темповую как голову 
+    }
+    else
+    {
+        struct sortQueue * headt = malloc(sizeof(struct sortQueue));//Иначе выделяем дин.память и добавляем темповую через доп.темповую в конец очереди
+        if(!headt)
+        {
+            perror("in appendSQ");
+            return head;
+        }
+        headt = head; 
+        while(headt->next != NULL)
+        {
+            headt = headt->next;
+        }
+        headt->next = temp;
+        free(headt);
+        return head;
+    }
+}
+
+void delSQ(struct sortQueue * head)//Удаление очереди из дин. памяти 
+{
+    while (head) {
+        struct sortQueue *tmp = head;
+        head = head->next;
+        free(tmp);
+    }
+}
+
+int * mergeQueue(struct sortQueue ** arr, int len, int * indArr) // Принимаем указатель на массив указателей на очереди, длину индексного массива и индексный массив соответственно
+{
+    int ctrlSum1 = 0;//Считаем и сверяем контрольные суммы
+    for (int i = 0; i < 256; i++)
+    {
+        struct sortQueue * temp = arr[i];
+        while(temp->next != NULL)
+        {
+            ctrlSum1 += temp->n;
+            temp = temp->next;           
+        }
+    }
+    int ctrlSum2 = 0;
+    for (int i = 0; i < len; i++)
+    {
+        ctrlSum2 += indArr[i];
+    }
+    if (ctrlSum1 != ctrlSum2)//Если не равны возвращаем ошибку
+    {
+        perror("Ошибка сортировки: контрольные суммы не равны 1");
+        return indArr;
+    }
+    int j = 0;
+    for(int i = 0; i < 256; i++)//Поэлементно переносим содержимое очередей в индексный массив
+    {
+        struct sortQueue * temp = arr[i];
+        while(temp->next != NULL)
+        {
+            temp->n = indArr[j];
+            j++;
+            temp = temp->next;         
+        }
+    }
+    for (int i = 0; i < len; i++)//Пересчитываем и сверяем контрольные суммы
+    {
+        ctrlSum2 += indArr[i];
+    }
+    if (ctrlSum1 != ctrlSum2)
+    {
+        perror("Ошибка сортировки: контрольные суммы не равны 2");
+        return indArr;
+    }
+    return indArr;
+}
+
+int * digitSort(struct List * head)
+{
+    int len = 0;
+    while(head->next != NULL)
+    {
+        len++;
+    }
+    int * indArr = malloc(sizeof(int) * len);
+    for(int i = 0; i < len; i++)
+    {
+        indArr[i] = i;
+    }
+    struct sortQueue * bytes = malloc(sizeof(struct  sortQueue *) * 256);
+    
+} 
 
 int main()
 {
