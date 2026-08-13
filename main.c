@@ -240,9 +240,52 @@ int * digitSort(struct List * head)
     {
         indArr[i] = i;
     }
-    struct sortQueue * bytes = malloc(sizeof(struct  sortQueue *) * 256);
-    
+    struct sortQueue ** bytes = malloc(sizeof(struct  sortQueue *) * 256);
+    struct List *temp = head;
+    for(int i = 3; i >= 0;  i--)
+    {
+        for(int j = 0; j < len; j++)
+        {
+            int code = (int)(retElAtInd(temp, indArr[j]).data.aut[i]);
+            appendSQ(bytes[code], indArr[i]);
+            if (temp->next == NULL)
+            {
+                perror("Конец списка раньше ожидаемого, ошибка в digitSort");
+                return indArr;
+            }
+            temp = temp->next;
+        }
+        temp = head;
+        indArr = mergeQueue(bytes, len, indArr);
+        for(int j = 0; j < 256; j++)
+        {
+            delSQ(bytes[j]);
+            bytes[j] = NULL; 
+        }
+    }
+    for(int i = 3; i >= 0;  i--)
+    {
+        for(int j = 0; j < len; j++)
+        {
+            int code = (int)(retElAtInd(temp, indArr[j]).data.pub[i]);
+            appendSQ(bytes[code], indArr[i]);
+            if (temp->next == NULL)
+            {
+                perror("Конец списка раньше ожидаемого, ошибка в digitSort");
+                return indArr;
+            }
+            temp = temp->next;
+        }
+        temp = head;
+        indArr = mergeQueue(bytes, len, indArr);
+        for(int j = 0; j < 256; j++)
+        {
+            delSQ(bytes[j]);
+            bytes[j] = NULL; 
+        }
+    }
 } 
+
 
 int main()
 {
