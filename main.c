@@ -111,13 +111,12 @@ void freeList(struct List *head) {//Очищаем список
 void print20ElList(struct List *head)//Выводим только 20 элементов
 {
     if (head == NULL) return;
-    struct List * inhead = NULL;
-    for(int i = 0; i < 20; i++)
+    struct List * headt = head;
+    for(int i = 0; i < 20 && headt != NULL; i++)
     {
-       inhead = appendList(inhead, head->data.aut, head->data.tit, head->data.pub, head->data.year, head->data.cop);
+       printBook(headt->data);
+       headt = headt->next;
     }
-    printList(inhead);
-    freeList(inhead);
     return;
 }
 
@@ -151,25 +150,19 @@ struct sortQueue * appendSQ(struct sortQueue * head, int n)//Добавляем 
         return head;
     }
     temp->n = n;// Приравниваем содержимое к полученному значению
+    temp->next = NULL;
     if (head == NULL)
     {
         return temp; //Если очередь пустая - просто возвращаем темповую как голову 
     }
     else
     {
-        struct sortQueue * headt = malloc(sizeof(struct sortQueue));//Иначе выделяем дин.память и добавляем темповую через доп.темповую в конец очереди
-        if(!headt)
-        {
-            perror("in appendSQ");
-            return head;
-        }
-        headt = head; 
+        struct sortQueue * headt = head;//Иначе добавляем темповую через доп.темповую в конец очереди
         while(headt->next != NULL)
         {
             headt = headt->next;
         }
         headt->next = temp;
-        free(headt);
         return head;
     }
 }
@@ -189,7 +182,7 @@ int * mergeQueue(struct sortQueue ** arr, int len, int * indArr) // Приним
     for (int i = 0; i < 256; i++)
     {
         struct sortQueue * temp = arr[i];
-        while(temp->next != NULL)
+        while(temp != NULL)
         {
             ctrlSum1 += temp->n;
             temp = temp->next;           
@@ -209,13 +202,14 @@ int * mergeQueue(struct sortQueue ** arr, int len, int * indArr) // Приним
     for(int i = 0; i < 256; i++)//Поэлементно переносим содержимое очередей в индексный массив
     {
         struct sortQueue * temp = arr[i];
-        while(temp->next != NULL)
+        while(temp != NULL)
         {
-            temp->n = indArr[j];
+            indArr[j] = temp->n;
             j++;
             temp = temp->next;         
         }
     }
+    ctrlSum2 = 0;
     for (int i = 0; i < len; i++)//Пересчитываем и сверяем контрольные суммы
     {
         ctrlSum2 += indArr[i];
@@ -231,9 +225,11 @@ int * mergeQueue(struct sortQueue ** arr, int len, int * indArr) // Приним
 int * digitSort(struct List * head)
 {
     int len = 0;
-    while(head->next != NULL)
+    struct List * headt = head;
+    while(headt != NULL)
     {
         len++;
+        headt = headt->next;
     }
     int * indArr = malloc(sizeof(int) * len);
     for(int i = 0; i < len; i++)
@@ -241,22 +237,27 @@ int * digitSort(struct List * head)
         indArr[i] = i;
     }
     struct sortQueue ** bytes = malloc(sizeof(struct  sortQueue *) * 256);
+    if(!bytes)
+    {
+        perror("in bytes");
+        return indArr;
+    }
+    for(int i = 0; i < 256; i++)
+    {
+        bytes[i] = NULL;
+    }
     struct List *temp = head;
     for(int i = 3; i >= 0;  i--)
     {
         for(int j = 0; j < len; j++)
         {
-            int code = (int)(retElAtInd(temp, indArr[j]).data.aut[i]);
-            appendSQ(bytes[code], indArr[i]);
-            if (temp->next == NULL)
-            {
-                perror("Конец списка раньше ожидаемого, ошибка в digitSort");
-                return indArr;
-            }
+            int code = (int)(retElAtInd(head, indArr[j]).data.aut[i]) + 128;
+            bytes[code] = appendSQ(bytes[code], indArr[j]);
             temp = temp->next;
         }
         temp = head;
         indArr = mergeQueue(bytes, len, indArr);
+        
         for(int j = 0; j < 256; j++)
         {
             delSQ(bytes[j]);
@@ -267,13 +268,8 @@ int * digitSort(struct List * head)
     {
         for(int j = 0; j < len; j++)
         {
-            int code = (int)(retElAtInd(temp, indArr[j]).data.pub[i]);
-            appendSQ(bytes[code], indArr[i]);
-            if (temp->next == NULL)
-            {
-                perror("Конец списка раньше ожидаемого, ошибка в digitSort");
-                return indArr;
-            }
+            int code = (int)(retElAtInd(head, indArr[j]).data.pub[i]) + 128;
+            bytes[code] = appendSQ(bytes[code], indArr[j]);
             temp = temp->next;
         }
         temp = head;
@@ -284,13 +280,20 @@ int * digitSort(struct List * head)
             bytes[j] = NULL; 
         }
     }
+    return indArr;
 } 
 
 
 int main()
 {
     struct List *base = openBase("testBase1.dat");
+    printf("Not sorted\n");
     print20ElList(base);
+    int * indArr = digitSort(base);
+    printf("Sorted\n");
+    for (int i = 0; i < 20; i++) {
+        printBook(retElAtInd(base, indArr[i]).data);
+    }
     freeList(base);
     return 0;
 }
