@@ -14,7 +14,7 @@ struct Book{ // Структура, в которую будет парсить�
 
 void printBook(struct Book data) // Вывод данных о книге
 {
-    printf("Author: %.*s\nTitle: %.*s\nPublisher: %.*s\nYear of publication: %hd\nCount of pages: %hd\n", 12, data.aut, 32, data.tit, 16, data.pub, data.year, data.cop);
+    printf("Author: %.*s | Title: %.*s | Publisher: %.*s | Year of publication: %hd | Count of pages: %hd\n", 12, data.aut, 32, data.tit, 16, data.pub, data.year, data.cop);
 }
 
 struct List{ // Структура списка, в который будет записываться БД
@@ -247,7 +247,7 @@ int * digitSort(struct List * head)
         bytes[i] = NULL;
     }
     struct List *temp = head;
-    for(int i = 3; i >= 0;  i--)
+    for(int i = 11; i >= 0;  i--)
     {
         for(int j = 0; j < len; j++)
         {
@@ -264,7 +264,7 @@ int * digitSort(struct List * head)
             bytes[j] = NULL; 
         }
     }
-    for(int i = 3; i >= 0;  i--)
+    for(int i = 15; i >= 0;  i--)
     {
         for(int j = 0; j < len; j++)
         {
@@ -280,6 +280,7 @@ int * digitSort(struct List * head)
             bytes[j] = NULL; 
         }
     }
+    free(bytes);
     return indArr;
 } 
 
@@ -290,8 +291,8 @@ int main()
     printf("Not sorted\n");
     print20ElList(base);
     int * indArr = digitSort(base);
-    printf("Sorted\n");
-    for (int i = 0; i < 20; i++) {
+    printf("\n\nSorted\n");
+    for (int i = 0; i < 4000; i++) {
         printBook(retElAtInd(base, indArr[i]).data);
     }
     freeList(base);
