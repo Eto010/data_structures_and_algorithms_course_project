@@ -283,7 +283,137 @@ int * digitSort(struct List * head)
     free(bytes);
     return indArr;
 } 
+struct Book * retElAtIndS(struct List* head, int n)//Функция для возвращения элемента списка по индексу
+{
+    for(int i = 0; i < n; i++)//Переходим к элементу с виртуальным номером n в списке
+    {
+        if (head->next == NULL)//Проверяем, не является ли следующий пустым
+        {
+            return &(head->data);
+        }
+        else
+        {
+            head = head->next;//Переходим к следующему элементу списка, если он есть
+        }
+    }
+    return &(head->data);
+}
 
+struct SortList
+{
+    struct Book * data;
+    struct SortList * next;
+};
+
+struct SortList * fillSortList(int * indArr, struct List *  old, int len)
+{
+    struct SortList * temp1;
+    struct SortList * new;
+    temp1 = (struct SortList *)malloc(sizeof(struct SortList));
+        if (temp1== NULL)
+        {
+            return NULL;
+        }
+    new = temp1;
+    for (int i = 0; i < len; i++)
+    {
+        temp1->next = (struct SortList *)malloc(sizeof(struct SortList));
+        if (temp1->next == NULL)
+        {
+            return NULL;
+        }
+        temp1->data = (retElAtIndS(old, indArr[i]));
+        temp1 = temp1->next;
+        temp1->next = NULL;
+    }
+    return new;
+}
+
+void printSortList(struct SortList * a)
+{
+    while (a != NULL)
+    {
+        printBook(*(a->data));
+        a = a->next;
+    }
+}
+void print20ElSortList(struct SortList * a)
+{
+    int n = 0; 
+    while ((a != NULL) && (n < 20))
+    {
+        printBook((*a->data));
+        a = a->next;
+        n++;
+    }
+}
+
+void controlPrintSortedList(struct SortList * a)
+{
+    char i;
+    while(1)
+    {
+        printf("Print all = Q\nPrint 20 elements = W\nEnd = E\n");
+        scanf(" %c", &i);
+        if(((int)i == (int)'e')||((int)i == (int)'E'))
+        {
+            break;
+            return;
+        }
+        if(((int)i == (int)'q')||((int)i == (int)'Q'))
+        {
+            printSortList(a);
+        }
+        if(((int)i == (int)'w')||((int)i == (int)'W'))
+        {
+            print20ElSortList(a);
+            for(int i = 0; i < 20; i++)
+            {
+                a = a->next;
+            }
+        }
+    }
+}
+
+void binarySearch(struct List *head, int *indArr, char *sought, int low, int high)
+{
+    if (low > high)
+    {
+        printf("Not search");
+        return;                   
+    }
+    int mid = low + (high - low) / 2;
+
+    struct Book *b = retElAtIndS(head, indArr[mid]);
+    if (b == NULL)
+        return;                  
+
+    struct Book temp = *b;
+
+    if ((int)temp.pub[0] == (int)sought[0])
+    {
+        if ((int)temp.pub[1] == (int)sought[1])
+        {
+            if ((int)temp.pub[2] == (int)sought[2])
+            {
+                printBook(temp);
+                return;         
+            }
+            else if ((int)temp.pub[2] < (int)sought[2])
+                binarySearch(head, indArr, sought, mid + 1, high);   
+            else
+                binarySearch(head, indArr, sought, low, mid - 1);    
+        }
+        else if ((int)temp.pub[1] < (int)sought[1])
+            binarySearch(head, indArr, sought, mid + 1, high);
+        else
+            binarySearch(head, indArr, sought, low, mid - 1);
+    }
+    else if ((int)temp.pub[0] < (int)sought[0])
+        binarySearch(head, indArr, sought, mid + 1, high);
+    else
+        binarySearch(head, indArr, sought, low, mid - 1);
+}
 
 int main()
 {
@@ -291,10 +421,16 @@ int main()
     printf("Not sorted\n");
     print20ElList(base);
     int * indArr = digitSort(base);
-    printf("\n\nSorted\n");
-    for (int i = 0; i < 4000; i++) {
-        printBook(retElAtInd(base, indArr[i]).data);
-    }
+    struct SortList * sort = fillSortList(indArr, base, 4000);
+    printf("Sorted\n");
+    controlPrintSortedList(sort);
+    int code0 = (int)(retElAtInd(base, indArr[0]).data.pub[0]);
+    int code1 = (int)(retElAtInd(base, indArr[0]).data.pub[1]);
+    int code2 = (int)(retElAtInd(base, indArr[0]).data.pub[2]);
+    char sought[3] = {(char)code0, (char)code1, (char)code2};
+    binarySearch(base, indArr, sought,  0, 4000);
     freeList(base);
+    free(sort);
+    free(indArr);
     return 0;
 }
