@@ -12,9 +12,12 @@ struct Book{ // Структура, в которую будет парсить�
 };
 #pragma pack(pop)
 
+int globalCountPrintBook = 0;
+
 void printBook(struct Book data) // Вывод данных о книге
 {
-    printf("Author: %.*s | Title: %.*s | Publisher: %.*s | Year of publication: %hd | Count of pages: %hd\n", 12, data.aut, 32, data.tit, 16, data.pub, data.year, data.cop);
+    globalCountPrintBook++;
+    printf("%d. Author: %.*s | Title: %.*s | Publisher: %.*s | Year of publication: %hd | Count of pages: %hd\n", globalCountPrintBook, 12, data.aut, 32, data.tit, 16, data.pub, data.year, data.cop);
 }
 
 struct List{ // Структура списка, в который будет записываться БД
@@ -225,46 +228,46 @@ int * mergeQueue(struct sortQueue ** arr, int len, int * indArr) // Приним
 int * digitSort(struct List * head)
 {
     int len = 0;
-    struct List * headt = head;
+    struct List * headt = head; //Задаем темповую переменную для головы
     while(headt != NULL)
     {
-        len++;
+        len++;// Находим длину списка
         headt = headt->next;
     }
-    int * indArr = malloc(sizeof(int) * len);
+    int * indArr = malloc(sizeof(int) * len); //Выделяем память
     for(int i = 0; i < len; i++)
     {
-        indArr[i] = i;
+        indArr[i] = i; //Заполняем индексный массив
     }
-    struct sortQueue ** bytes = malloc(sizeof(struct  sortQueue *) * 256);
+    struct sortQueue ** bytes = malloc(sizeof(struct  sortQueue *) * 256); //Создаем массив из сортировочных очередей
     if(!bytes)
     {
-        perror("in bytes");
+        perror("in bytes"); //Проверяем выделение памяти
         return indArr;
     }
     for(int i = 0; i < 256; i++)
     {
-        bytes[i] = NULL;
+        bytes[i] = NULL; //Заполняем поля массива сортировочных очередей пустыми указателям
     }
-    struct List *temp = head;
-    for(int i = 11; i >= 0;  i--)
+    struct List *temp = head; // Создаем еще одну темповую переменную
+    for(int i = 11; i >= 0;  i--)// Сортировка по автору
     {
         for(int j = 0; j < len; j++)
         {
-            int code = (int)(retElAtInd(head, indArr[j]).data.aut[i]) + 128;
-            bytes[code] = appendSQ(bytes[code], indArr[j]);
-            temp = temp->next;
+            int code = (int)(retElAtInd(head, indArr[j]).data.aut[i]) + 128; // Разбивка по кодам символов
+            bytes[code] = appendSQ(bytes[code], indArr[j]); // Добавление в соответствующие очереди
+            temp = temp->next;// Перевод указателя
         }
         temp = head;
-        indArr = mergeQueue(bytes, len, indArr);
+        indArr = mergeQueue(bytes, len, indArr); //Слияние очередей
         
         for(int j = 0; j < 256; j++)
         {
-            delSQ(bytes[j]);
+            delSQ(bytes[j]);// Удаление старых значений
             bytes[j] = NULL; 
         }
     }
-    for(int i = 15; i >= 0;  i--)
+    for(int i = 15; i >= 0;  i--)// Тоже самое, но по издательству
     {
         for(int j = 0; j < len; j++)
         {
@@ -280,7 +283,7 @@ int * digitSort(struct List * head)
             bytes[j] = NULL; 
         }
     }
-    free(bytes);
+    free(bytes); // Очистка массивов
     return indArr;
 } 
 struct Book * retElAtIndS(struct List* head, int n)//Функция для возвращения элемента списка по индексу
@@ -299,15 +302,15 @@ struct Book * retElAtIndS(struct List* head, int n)//Функция для во�
     return &(head->data);
 }
 
-struct SortList
+struct SortList // Структура для сбора данных в упорядоченный список
 {
     struct Book * data;
     struct SortList * next;
 };
 
-struct SortList * fillSortList(int * indArr, struct List *  old, int len)
+struct SortList * fillSortList(int * indArr, struct List *  old, int len) // Заполнение отсортированного списка
 {
-    struct SortList * temp1;
+    struct SortList * temp1; // Создаем структуры
     struct SortList * new;
     temp1 = (struct SortList *)malloc(sizeof(struct SortList));
         if (temp1== NULL)
@@ -315,7 +318,7 @@ struct SortList * fillSortList(int * indArr, struct List *  old, int len)
             return NULL;
         }
     new = temp1;
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++)// Переносим данные из индексного массива в упорядоченный список
     {
         temp1->next = (struct SortList *)malloc(sizeof(struct SortList));
         if (temp1->next == NULL)
@@ -348,7 +351,7 @@ void print20ElSortList(struct SortList * a)
     }
 }
 
-void controlPrintSortedList(struct SortList * a)
+void controlPrintSortedList(struct SortList * a) // Контролируемый вывод
 {
     char i;
     while(1)
@@ -375,7 +378,7 @@ void controlPrintSortedList(struct SortList * a)
     }
 }
 
-void binarySearch(struct List *head, int *indArr, char *sought, int low, int high)
+void binarySearch(struct List *head, int *indArr, char *sought, int low, int high) // Прототип бинарной сортировки
 {
     if (low > high)
     {
@@ -422,6 +425,7 @@ int main()
     print20ElList(base);
     int * indArr = digitSort(base);
     struct SortList * sort = fillSortList(indArr, base, 4000);
+    globalCountPrintBook = 0;
     printf("Sorted\n");
     controlPrintSortedList(sort);
     int code0 = (int)(retElAtInd(base, indArr[0]).data.pub[0]);
